@@ -89,6 +89,8 @@ class TestTaskProcessor:
         assert claude.run_planning.call_count == 2
         # Should have added error comment
         notion.add_comment.assert_called()
+        # Should have reverted to original trigger status
+        notion.update_task_status.assert_any_call("page-123", TaskStatus.TO_PLAN)
 
     def test_process_non_actionable_task(self):
         notion = MagicMock()
@@ -118,3 +120,25 @@ class TestTaskProcessor:
 
         assert result is True
         assert claude.run_planning.call_count == 2
+
+    def test_process_implementation_failure_reverts_status(self):
+        notion = MagicMock()
+        claude = MagicMock()
+        claude.run_implementation.return_value = ClaudeResult(
+            success=False, output="", error="Implementation failed"
+        )
+
+        processor = TaskProcessor(notion, claude, _make_settings())
+        task = _make_task(TaskStatus.READY_TO_IMPLEMENT)
+
+        result = processor.process_task(task)
+
+        assert result is False
+        # Should have moved to in-progress first
+        notion.update_task_status.assert_any_call(
+            "page-123", TaskStatus.IMPLEMENT_IN_PROGRESS
+        )
+        # Should have reverted to original trigger status
+        notion.update_task_status.assert_any_call(
+            "page-123", TaskStatus.READY_TO_IMPLEMENT
+        )

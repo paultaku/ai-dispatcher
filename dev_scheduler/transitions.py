@@ -93,6 +93,18 @@ class TaskProcessor:
                 )
             except Exception:
                 pass
+
+            # Revert to original trigger status so scheduler can retry
+            try:
+                self._notion.update_task_status(task.page_id, task.status)
+                log.info(
+                    "reverted_to_trigger_status",
+                    reverted_to=task.status.value,
+                    from_status=in_progress_status.value,
+                )
+            except Exception as e:
+                log.error("failed_to_revert_status", error=str(e))
+
             return False
 
     def _run_with_retries(self, task: Task) -> ClaudeResult:
