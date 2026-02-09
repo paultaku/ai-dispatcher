@@ -17,15 +17,32 @@ class NotionTaskClient:
     def __init__(self, settings: Settings) -> None:
         self._client = Client(auth=settings.notion_token)
         self._database_id = settings.notion_database_id
+        
+        # Retrieve database to get the associated data source ID
+        database = self._client.databases.retrieve(self._database_id)
+        data_sources = database.get("data_sources", [])
+        if not data_sources:
+             # Fallback or error if no data source is found, but for now assuming it exists based on exploration
+             # In a real scenario we might want to raise an error or handle this gracefully
+             # For this fix we'll assume the first one is the correct one as per new API usage
+             logger.warning("no_data_source_found", database_id=self._database_id)
+             self._data_source_id = None
+        else:
+             self._data_source_id = data_sources[0]["id"]
 
     def query_tasks_by_status(self, status: TaskStatus) -> list[Task]:
         """Query the Notion database for tasks with a specific status."""
         logger.info("querying_notion", status=status.value)
-        response = self._client.databases.query(
-            database_id=self._database_id,
+        
+        if not self._data_source_id:
+             logger.error("missing_data_source_id", database_id=self._database_id)
+             return []
+
+        response = self._client.data_sources.query(
+            data_source_id=self._data_source_id,
             filter={
                 "property": "Status",
-                "status": {"equals": status.value},
+                "select": {"equals": status.value},
             },
         )
         tasks = []
@@ -50,7 +67,7 @@ class NotionTaskClient:
             page_id=page_id,
             properties={
                 "Status": {
-                    "status": {"name": new_status.value},
+                    "select": {"name": new_status.value},
                 },
             },
         )
@@ -102,7 +119,13 @@ class NotionTaskClient:
 
             # Extract status
             status_prop = props.get("Status", {})
-            status_name = status_prop.get("status", {}).get("name", "")
+            # Handle both 'status' and 'select' types for backward compatibility or different setups
+            status_name = ""
+            if "status" in status_prop:
+                status_name = status_prop["status"].get("name", "")
+            elif "select" in status_prop:
+                status_name = status_prop["select"].get("name", "")
+            
             status = TaskStatus(status_name)
 
             # Extract description (rich text)
