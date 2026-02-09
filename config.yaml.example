@@ -1,0 +1,25 @@
+# Dev Scheduler - Project Configuration
+# Maps Notion database IDs to local working directories.
+#
+# Copy this file to config.yaml and fill in your values:
+#   cp config.yaml.example config.yaml
+#
+# The scheduler uses this to determine where to run Claude Code
+# for tasks from each Notion database.
+
+projects:
+  # Each project entry maps a Notion database to a local directory.
+  #
+  # Fields:
+  #   name              - Human-readable project label (for logging)
+  #   notion_database_id - Your Notion database ID
+  #   working_directory  - Absolute path to the local project root
+  #
+  - name: "my-project"
+    notion_database_id: "your-notion-database-id-here"
+    working_directory: "/path/to/your/project"
+
+  # Add more projects as needed:
+  # - name: "another-project"
+  #   notion_database_id: "another-database-id"
+  #   working_directory: "/path/to/another/project"

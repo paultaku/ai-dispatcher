@@ -15,3 +15,6 @@ venv/
 
 # OMC
 .omc/
+
+# Project config (user-specific)
+config.yaml

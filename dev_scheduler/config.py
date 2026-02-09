@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     max_retries: int = 2  # max retries per AI stage
     retry_backoff_base: float = 2.0  # exponential backoff base
 
+    # YAML project config
+    config_file: str = "config.yaml"
+
     # Claude Code
     claude_command: str = "claude"
     claude_timeout: int = 600  # 10 min timeout for AI operations

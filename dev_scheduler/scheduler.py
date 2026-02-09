@@ -12,6 +12,7 @@ from dev_scheduler.config import Settings
 from dev_scheduler.models import AI_TRIGGER_STATUSES
 from dev_scheduler.notion_client import NotionTaskClient
 from dev_scheduler.transitions import TaskProcessor
+from dev_scheduler.yaml_config import YamlConfig
 
 logger = structlog.get_logger()
 
@@ -25,6 +26,7 @@ class Scheduler:
         self._claude = ClaudeRunner(settings)
         self._processor = TaskProcessor(self._notion, self._claude, settings)
         self._running = False
+        self._yaml_config = YamlConfig(settings.config_file)
 
     async def run(self) -> None:
         """Run the scheduler polling loop."""
@@ -69,10 +71,19 @@ class Scheduler:
 
         logger.info("found_actionable_tasks", count=len(tasks))
 
+        # Resolve working directory from YAML config
+        yaml_path = self._yaml_config.resolve_working_directory(
+            self._settings.notion_database_id
+        )
+
         # Process tasks serially (v1 - one at a time)
         for task in tasks:
             if not self._running:
                 break
+
+            # Use YAML working directory as default if task has no ProjectPath
+            if yaml_path and not task.project_path:
+                task.project_path = yaml_path
 
             logger.info("processing_task", task=task.name, status=task.status.value)
             success = self._processor.process_task(task)
