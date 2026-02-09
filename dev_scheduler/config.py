@@ -10,7 +10,7 @@ class Settings(BaseSettings):
 
     # Notion API
     notion_token: str
-    notion_database_id: str
+    notion_database_id: str = ""
 
     # Scheduler
     poll_interval: int = 30  # seconds between polls

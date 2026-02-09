@@ -22,11 +22,29 @@ class Scheduler:
 
     def __init__(self, settings: Settings) -> None:
         self._settings = settings
+        self._yaml_config = YamlConfig(settings.config_file)
+
+        # Resolve notion_database_id from YAML config if not set in env
+        if not settings.notion_database_id:
+            mappings = self._yaml_config.mappings
+            if mappings:
+                settings.notion_database_id = mappings[0].notion_database_id
+                logger.info(
+                    "resolved_database_id_from_yaml",
+                    database_id=settings.notion_database_id,
+                    project_name=mappings[0].name,
+                )
+            else:
+                raise ValueError(
+                    "notion_database_id is not set in environment and no projects "
+                    "found in config.yaml. Set NOTION_DATABASE_ID in .env or add "
+                    "a project to config.yaml."
+                )
+
         self._notion = NotionTaskClient(settings)
         self._claude = ClaudeRunner(settings)
         self._processor = TaskProcessor(self._notion, self._claude, settings)
         self._running = False
-        self._yaml_config = YamlConfig(settings.config_file)
 
     async def run(self) -> None:
         """Run the scheduler polling loop."""

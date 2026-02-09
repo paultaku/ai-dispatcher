@@ -127,3 +127,8 @@ class YamlConfig:
             if mapping.notion_database_id == notion_database_id:
                 return mapping.working_directory
         return None
+
+    @property
+    def mappings(self) -> list[ProjectMapping]:
+        """Return all loaded project mappings."""
+        return list(self._mappings)
