@@ -1,0 +1,8 @@
+projects:
+  - name: example-app
+    path: /Users/you/Projects/example-app
+    git_remote: https://github.com/you/example-app
+  # Add your projects here:
+  # - name: my-app
+  #   path: /Users/you/Projects/my-app
+  #   git_remote: https://github.com/you/my-app

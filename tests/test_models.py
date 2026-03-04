@@ -1,10 +1,11 @@
-"""Tests for dev_scheduler.models."""
+"""Tests for src.core.models."""
 
-from dev_scheduler.models import (
+from src.core.models import (
     AI_TRANSITIONS,
     AI_TRIGGER_STATUSES,
+    CAPACITY_STATUSES,
     VALID_TRANSITIONS,
-    Task,
+    Requirement,
     TaskStatus,
 )
 
@@ -15,8 +16,8 @@ class TestTaskStatus:
     def test_has_14_statuses(self):
         assert len(TaskStatus) == 14
 
-    def test_status_values_match_notion(self):
-        """Status values must match exactly what Notion expects."""
+    def test_status_values(self):
+        """Status values must match the YAML format."""
         expected = [
             "Requirement",
             "DesignInProgress",
@@ -51,6 +52,11 @@ class TestTaskStatus:
             TaskStatus.IMPLEMENT_DONE,
         )
 
+    def test_capacity_statuses(self):
+        assert TaskStatus.PLANNING in CAPACITY_STATUSES
+        assert TaskStatus.IMPLEMENT_IN_PROGRESS in CAPACITY_STATUSES
+        assert len(CAPACITY_STATUSES) == 2
+
     def test_valid_transitions_chain(self):
         """All statuses except the last should have a forward transition."""
         all_statuses = list(TaskStatus)
@@ -66,32 +72,43 @@ class TestTaskStatus:
             assert next_status == all_statuses[i + 1]
 
 
-class TestTask:
-    """Tests for Task dataclass."""
+class TestRequirement:
+    """Tests for Requirement dataclass."""
 
-    def test_create_minimal_task(self):
-        task = Task(
-            page_id="abc-123",
-            name="Test Task",
+    def test_create_minimal_requirement(self):
+        req = Requirement(
+            file_path="/tmp/memory/plan/myapp/feat.yaml",
+            app_name="myapp",
+            feature_name="feat",
             status=TaskStatus.REQUIREMENT,
         )
-        assert task.page_id == "abc-123"
-        assert task.name == "Test Task"
-        assert task.status == TaskStatus.REQUIREMENT
-        assert task.description == ""
-        assert task.project_path == ""
+        assert req.file_path == "/tmp/memory/plan/myapp/feat.yaml"
+        assert req.app_name == "myapp"
+        assert req.feature_name == "feat"
+        assert req.status == TaskStatus.REQUIREMENT
+        assert req.project_path == ""
+        assert req.branch == ""
+        assert req.describe == ""
+        assert req.optimized_prompt == ""
+        assert req.decision == {}
+        assert req.action_report == ""
 
-    def test_create_full_task(self):
-        task = Task(
-            page_id="abc-123",
-            name="Full Task",
+    def test_create_full_requirement(self):
+        req = Requirement(
+            file_path="/tmp/memory/plan/app/feature.yaml",
+            app_name="app",
+            feature_name="feature",
             status=TaskStatus.TO_PLAN,
-            description="Build a feature",
             project_path="/path/to/project",
-            repository="https://github.com/user/repo",
-            branch="feature-branch",
+            branch="feature/my-feature",
+            describe="Build a feature",
+            optimized_prompt="Implement X using Y",
+            decision={"question1": "What color?", "answer1": "blue"},
+            action_report="Feature implemented successfully",
         )
-        assert task.description == "Build a feature"
-        assert task.project_path == "/path/to/project"
-        assert task.repository == "https://github.com/user/repo"
-        assert task.branch == "feature-branch"
+        assert req.project_path == "/path/to/project"
+        assert req.branch == "feature/my-feature"
+        assert req.describe == "Build a feature"
+        assert req.optimized_prompt == "Implement X using Y"
+        assert req.decision == {"question1": "What color?", "answer1": "blue"}
+        assert req.action_report == "Feature implemented successfully"

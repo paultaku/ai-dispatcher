@@ -49,6 +49,12 @@ AI_TRANSITIONS: dict[TaskStatus, tuple[TaskStatus, TaskStatus]] = {
     ),
 }
 
+# Statuses that count toward the concurrency capacity limit
+CAPACITY_STATUSES: set[TaskStatus] = {
+    TaskStatus.PLANNING,
+    TaskStatus.IMPLEMENT_IN_PROGRESS,
+}
+
 # All valid forward transitions
 VALID_TRANSITIONS: dict[TaskStatus, TaskStatus] = {
     TaskStatus.REQUIREMENT: TaskStatus.DESIGN_IN_PROGRESS,
@@ -68,17 +74,16 @@ VALID_TRANSITIONS: dict[TaskStatus, TaskStatus] = {
 
 
 @dataclass
-class Task:
-    """Represents a task from the Notion database."""
+class Requirement:
+    """Represents a requirement loaded from a YAML file under memory/plan/."""
 
-    page_id: str
-    name: str
+    file_path: str          # absolute path to the YAML file
+    app_name: str           # directory name under memory/plan/
+    feature_name: str       # filename stem
     status: TaskStatus
-    description: str = ""
-    project_path: str = ""
-    repository: str = ""
+    project_path: str = ""  # from YAML `path` field
     branch: str = ""
-    plan_output: str = ""
-    error: str = ""
-    session_id: str = ""  # Claude Code session ID for --resume
-    raw_properties: dict = field(default_factory=dict)
+    describe: str = ""
+    optimized_prompt: str = ""
+    decision: dict = field(default_factory=dict)
+    action_report: str = ""

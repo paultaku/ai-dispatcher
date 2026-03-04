@@ -1,16 +1,16 @@
 [project]
 name = "dev-scheduler"
 version = "0.1.0"
-description = "AI task scheduler - Notion to Claude Code workflow automation"
+description = "AI task scheduler - file-based YAML to Claude Code workflow automation"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "notion-client>=2.0.0",
     "python-dotenv>=1.0.0",
     "structlog>=24.0.0",
     "pydantic>=2.0.0",
     "pydantic-settings>=2.0.0",
     "pyyaml>=6.0",
+    "claude-agent-sdk>=0.1.0",
 ]
 
 [project.optional-dependencies]
@@ -21,3 +21,11 @@ dev = [
 
 [project.scripts]
 dev-scheduler = "main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = ["."]

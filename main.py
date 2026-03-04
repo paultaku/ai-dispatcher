@@ -1,4 +1,4 @@
-"""Dev Scheduler - AI task scheduler from Notion to Claude Code.
+"""Dev Scheduler - File-based AI task scheduler.
 
 Usage:
     python main.py
@@ -6,14 +6,14 @@ Usage:
     dev-scheduler
 """
 
-from dev_scheduler.scheduler import run_with_signal_handling
+from src.core.scheduler import run_with_signal_handling
 
 
 def main() -> None:
     """Entry point for the dev-scheduler."""
     print("Dev Scheduler - AI Task Scheduler")
     print("==================================")
-    print("Polling Notion for AI-actionable tasks...")
+    print("Scanning memory/plan/ for actionable requirements...")
     print("Press Ctrl+C to stop.\n")
     run_with_signal_handling()
 

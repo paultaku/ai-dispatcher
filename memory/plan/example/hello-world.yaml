@@ -1,0 +1,11 @@
+path: /Users/you/Projects/example-app
+status: Requirement
+feature:
+  branch: feature/hello-world
+  describe: |
+    Add a simple "Hello, World!" endpoint to the application.
+    The endpoint should respond to GET /hello with a JSON response
+    containing a greeting message.
+  optimized-prompt: ""
+  decision: {}
+  action-report: ""
